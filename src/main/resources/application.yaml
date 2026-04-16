@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: attendance_analyser
+
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_DOCKER_NAME:localhost}:5432/attendance_analyser
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME:user}
+    password: ${DB_PASSWORD:password}
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+    open-in-view: false
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: attendance-analyser-group
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+
+lms:
+  base-url: ${LMS_BASE_URL:http://localhost:8080}
+
+kafka:
+  topics:
+    face-recognition: face-recognition-events
+
+logging:
+  level:
+    root: info
+    org.springframework: info
+    org.hibernate.SQL: info
+    kz.diploma.rprettser: debug
+
+server:
+  port: 8081
