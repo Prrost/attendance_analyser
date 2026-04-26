@@ -15,6 +15,11 @@ public class CacheSyncScheduler {
 
     @Scheduled(fixedRateString = "${scheduler.cache-sync.rate-ms:300000}")
     public void sync() {
-        // TODO
+        log.info("Scheduled cache sync started");
+        try {
+            cacheSyncFacade.syncAll();
+        } catch (Exception e) {
+            log.error("Cache sync failed", e);
+        }
     }
 }

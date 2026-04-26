@@ -33,6 +33,11 @@ public class ClassroomServiceImpl implements ClassroomService {
     }
 
     @Override
+    public Optional<Classroom> findByName(String name) {
+        return repository.findByName(name);
+    }
+
+    @Override
     public List<Classroom> findAll() {
         return repository.findAll();
     }

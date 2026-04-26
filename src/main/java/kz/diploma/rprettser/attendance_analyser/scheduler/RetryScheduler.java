@@ -15,6 +15,11 @@ public class RetryScheduler {
 
     @Scheduled(fixedRateString = "${scheduler.retry.rate-ms:120000}")
     public void retry() {
-        // TODO
+        log.debug("Retry scheduler started");
+        try {
+            faceRecognitionFacade.retryFailedEvents();
+        } catch (Exception e) {
+            log.error("Retry failed events failed", e);
+        }
     }
 }

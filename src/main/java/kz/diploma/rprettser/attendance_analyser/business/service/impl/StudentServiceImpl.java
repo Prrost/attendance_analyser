@@ -33,6 +33,11 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    public Optional<Student> findByNameAndLastName(String name, String lastName) {
+        return repository.findByNameAndLastName(name, lastName);
+    }
+
+    @Override
     public List<Student> findAll() {
         return repository.findAll();
     }

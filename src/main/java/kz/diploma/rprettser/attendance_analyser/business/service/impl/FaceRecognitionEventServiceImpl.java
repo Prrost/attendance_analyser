@@ -1,6 +1,8 @@
 package kz.diploma.rprettser.attendance_analyser.business.service.impl;
 
 import kz.diploma.rprettser.attendance_analyser.business.service.FaceRecognitionEventService;
+import java.time.LocalDateTime;
+import java.util.List;
 import kz.diploma.rprettser.attendance_analyser.dal.entity.FaceRecognitionEvent;
 import kz.diploma.rprettser.attendance_analyser.dal.enums.FaceRecognitionStatus;
 import kz.diploma.rprettser.attendance_analyser.dal.repository.FaceRecognitionEventRepository;
@@ -19,19 +21,26 @@ public class FaceRecognitionEventServiceImpl implements FaceRecognitionEventServ
 
     @Override
     public FaceRecognitionEvent save(FaceRecognitionEvent event) {
-        // TODO
-        return null;
+        LocalDateTime now = LocalDateTime.now();
+        if (event.getCreatedAt() == null) {
+            event.setCreatedAt(now);
+        }
+        event.setUpdatedAt(now);
+        return repository.save(event);
     }
 
     @Override
     public List<FaceRecognitionEvent> findAllByStatus(FaceRecognitionStatus status) {
-        // TODO
-        return List.of();
+        return repository.findAllByStatus(status);
     }
 
     @Override
     public List<FaceRecognitionEvent> findAllByStudentAndLesson(Long studentLmsId, Long lessonLmsId) {
-        // TODO
-        return List.of();
+        return repository.findAllByStudentLmsIdAndLessonLmsId(studentLmsId, lessonLmsId);
+    }
+
+    @Override
+    public List<FaceRecognitionEvent> findAllByStatusAndCreatedAfter(FaceRecognitionStatus status, LocalDateTime since) {
+        return repository.findAllByStatusAndCreatedAtAfter(status, since);
     }
 }

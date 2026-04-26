@@ -29,6 +29,7 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
+        spring.json.value.default.type: kz.diploma.rprettser.attendance_analyser.business.dto.kafka.FaceRecognitionEventDto
 
 lms:
   base-url: ${LMS_BASE_URL:http://localhost:8080}
@@ -43,6 +44,13 @@ logging:
     org.springframework: info
     org.hibernate.SQL: info
     kz.diploma.rprettser: debug
+
+attendance:
+  late-threshold-minutes: 15
+
+scheduler:
+  active-attendance:
+    rate-ms: 60000
 
 server:
   port: 8081

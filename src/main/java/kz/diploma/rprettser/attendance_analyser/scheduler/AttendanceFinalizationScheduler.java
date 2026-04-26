@@ -14,7 +14,22 @@ public class AttendanceFinalizationScheduler {
     private final AttendanceFacade attendanceFacade;
 
     @Scheduled(fixedRateString = "${scheduler.finalization.rate-ms:60000}")
-    public void finalize() {
-        // TODO
+    public void finalizeExpiredLessons() {
+        log.debug("Attendance finalization started");
+        try {
+            attendanceFacade.finalizeExpiredLessons();
+        } catch (Exception e) {
+            log.error("Attendance finalization failed", e);
+        }
+    }
+
+    @Scheduled(fixedRateString = "${scheduler.active-attendance.rate-ms:60000}")
+    public void updateActiveAttendance() {
+        log.debug("Active attendance update started");
+        try {
+            attendanceFacade.updateActiveAttendance();
+        } catch (Exception e) {
+            log.error("Active attendance update failed", e);
+        }
     }
 }

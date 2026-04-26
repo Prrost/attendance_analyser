@@ -12,13 +12,19 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class FaceRecognitionConsumer {
 
-//    private final FaceRecognitionFacade faceRecognitionFacade;
-//
-//    @KafkaListener(
-//            topics = "${kafka.topics.face-recognition}",
-//            groupId = "${spring.kafka.consumer.group-id}"
-//    )
+    private final FaceRecognitionFacade faceRecognitionFacade;
+
+    @KafkaListener(
+            topics = "${kafka.topics.face-recognition}",
+            groupId = "${spring.kafka.consumer.group-id}"
+    )
     public void consume(FaceRecognitionEventDto dto) {
-        // TODO
+        log.debug("Received face recognition event: student={} {}, classroom={}",
+                dto.getStudentName(), dto.getStudentLastName(), dto.getClassroomName());
+        try {
+            faceRecognitionFacade.processEvent(dto);
+        } catch (Exception e) {
+            log.error("Failed to process face recognition event", e);
+        }
     }
 }

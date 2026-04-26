@@ -13,5 +13,7 @@ public interface ClassroomService {
 
     Optional<Classroom> findByLmsId(Long lmsId);
 
+    Optional<Classroom> findByName(String name);
+
     List<Classroom> findAll();
 }

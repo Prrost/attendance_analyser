@@ -13,5 +13,7 @@ public interface AttendanceService {
 
     boolean existsByStudentAndLesson(Long studentId, Long lessonId);
 
+    Attendance findOrCreate(Long studentId, Long lessonId);
+
     Attendance createOrUpdate(Long studentId, Long lessonId, AttendanceMark mark);
 }

@@ -7,8 +7,9 @@ import java.time.LocalDateTime;
 
 @Data
 public class FaceRecognitionEventDto {
-    private Long studentLmsId;
-    private Long classroomLmsId;
+    private String studentName;
+    private String studentLastName;
+    private String classroomName;
     private LocalDateTime recognizedAt;
     private BigDecimal confidence;
 }

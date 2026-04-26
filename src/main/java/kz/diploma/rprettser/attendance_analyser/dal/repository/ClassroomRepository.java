@@ -13,4 +13,6 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long>, Jpa
     Optional<Classroom> findByLmsId(Long lmsId);
 
     boolean existsByLmsId(Long lmsId);
+
+    Optional<Classroom> findByName(String name);
 }

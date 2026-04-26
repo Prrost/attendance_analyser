@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -14,4 +15,6 @@ public interface FaceRecognitionEventRepository extends JpaRepository<FaceRecogn
     List<FaceRecognitionEvent> findAllByStatus(FaceRecognitionStatus status);
 
     List<FaceRecognitionEvent> findAllByStudentLmsIdAndLessonLmsId(Long studentLmsId, Long lessonLmsId);
+
+    List<FaceRecognitionEvent> findAllByStatusAndCreatedAtAfter(FaceRecognitionStatus status, LocalDateTime since);
 }

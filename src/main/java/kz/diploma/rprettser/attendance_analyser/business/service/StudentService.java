@@ -13,5 +13,7 @@ public interface StudentService {
 
     Optional<Student> findByLmsId(Long lmsId);
 
+    Optional<Student> findByNameAndLastName(String name, String lastName);
+
     List<Student> findAll();
 }
