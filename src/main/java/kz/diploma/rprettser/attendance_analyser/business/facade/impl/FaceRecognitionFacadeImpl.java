@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -41,47 +40,23 @@ public class FaceRecognitionFacadeImpl implements FaceRecognitionFacade {
     public void processEvent(FaceRecognitionEventDto dto) {
         log.debug("Processing face recognition event: student={} {}, classroom={}",
                 dto.getStudentName(), dto.getStudentLastName(), dto.getClassroomName());
-
-        Optional<Classroom> classroomOpt = classroomService.findByName(dto.getClassroomName());
-        if (classroomOpt.isEmpty()) {
-            log.warn("Classroom not found: {}", dto.getClassroomName());
+        try {
+            ResolvedEvent resolved = resolve(dto);
+            FaceRecognitionEvent event = FaceRecognitionEvent.builder()
+                    .studentLmsId(resolved.student().getLmsId())
+                    .lessonLmsId(resolved.lesson().getLmsId())
+                    .recognizedAt(dto.getRecognizedAt())
+                    .confidence(dto.getConfidence())
+                    .status(FaceRecognitionStatus.PROCESSED)
+                    .attendance(resolved.attendance())
+                    .build();
+            faceRecognitionEventService.save(event);
+            log.debug("Saved face recognition event for student={} lesson={}",
+                    resolved.student().getLmsId(), resolved.lesson().getLmsId());
+        } catch (Exception e) {
+            log.warn("Processing failed, saving as FAILED: {}", e.getMessage());
             saveFailedEvent(dto);
-            return;
         }
-
-        Classroom classroom = classroomOpt.get();
-        Optional<Lesson> lessonOpt = lessonRepository.findActiveByClassroomLmsIdAndMoment(
-                classroom.getLmsId(), dto.getRecognizedAt());
-        if (lessonOpt.isEmpty()) {
-            log.warn("No active lesson found for classroom={} at {}", dto.getClassroomName(), dto.getRecognizedAt());
-            saveFailedEvent(dto);
-            return;
-        }
-
-        Optional<Student> studentOpt = studentService.findByNameAndLastName(
-                dto.getStudentName(), dto.getStudentLastName());
-        if (studentOpt.isEmpty()) {
-            log.warn("Student not found: {} {}", dto.getStudentName(), dto.getStudentLastName());
-            saveFailedEvent(dto);
-            return;
-        }
-
-        Lesson lesson = lessonOpt.get();
-        Student student = studentOpt.get();
-
-        Attendance attendance = attendanceService.findOrCreate(student.getId(), lesson.getId());
-
-        FaceRecognitionEvent event = FaceRecognitionEvent.builder()
-                .studentLmsId(student.getLmsId())
-                .lessonLmsId(lesson.getLmsId())
-                .recognizedAt(dto.getRecognizedAt())
-                .confidence(dto.getConfidence())
-                .status(FaceRecognitionStatus.PROCESSED)
-                .attendance(attendance)
-                .build();
-
-        faceRecognitionEventService.save(event);
-        log.debug("Saved face recognition event for student={} lesson={}", student.getLmsId(), lesson.getLmsId());
     }
 
     @Override
@@ -100,17 +75,40 @@ public class FaceRecognitionFacadeImpl implements FaceRecognitionFacade {
             try {
                 FaceRecognitionEventDto dto = objectMapper.readValue(
                         event.getRawPayload(), FaceRecognitionEventDto.class);
-                processEvent(dto);
+                ResolvedEvent resolved = resolve(dto);
+                event.setStudentLmsId(resolved.student().getLmsId());
+                event.setLessonLmsId(resolved.lesson().getLmsId());
+                event.setAttendance(resolved.attendance());
                 event.setStatus(FaceRecognitionStatus.PROCESSED);
                 event.setUpdatedAt(LocalDateTime.now());
                 faceRecognitionEventService.save(event);
+                log.debug("Retry succeeded for event id={}", event.getId());
             } catch (JsonProcessingException e) {
                 log.error("Failed to deserialize rawPayload for event id={}", event.getId(), e);
             } catch (Exception e) {
-                log.error("Failed to retry event id={}", event.getId(), e);
+                log.warn("Retry still failing for event id={}: {}", event.getId(), e.getMessage());
             }
         }
     }
+
+    private ResolvedEvent resolve(FaceRecognitionEventDto dto) {
+        Classroom classroom = classroomService.findByName(dto.getClassroomName())
+                .orElseThrow(() -> new IllegalStateException("Classroom not found: " + dto.getClassroomName()));
+
+        Lesson lesson = lessonRepository.findActiveByClassroomLmsIdAndMoment(
+                        classroom.getLmsId(), dto.getRecognizedAt())
+                .orElseThrow(() -> new IllegalStateException(
+                        "No active lesson for classroom=" + dto.getClassroomName() + " at " + dto.getRecognizedAt()));
+
+        Student student = studentService.findByNameAndLastName(dto.getStudentName(), dto.getStudentLastName())
+                .orElseThrow(() -> new IllegalStateException(
+                        "Student not found: " + dto.getStudentName() + " " + dto.getStudentLastName()));
+
+        Attendance attendance = attendanceService.findOrCreate(student.getId(), lesson.getId());
+        return new ResolvedEvent(student, lesson, attendance);
+    }
+
+    private record ResolvedEvent(Student student, Lesson lesson, Attendance attendance) {}
 
     private void saveFailedEvent(FaceRecognitionEventDto dto) {
         String rawPayload = null;
