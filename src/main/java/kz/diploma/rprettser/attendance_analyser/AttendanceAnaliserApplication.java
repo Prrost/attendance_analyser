@@ -11,7 +11,7 @@ import java.util.TimeZone;
 public class AttendanceAnaliserApplication {
 
 	public static void main(String[] args) {
-		TimeZone.setDefault(TimeZone.getTimeZone(System.getenv().getOrDefault("APP_TIMEZONE", "Europe/Almaty")));
+		TimeZone.setDefault(TimeZone.getTimeZone(System.getenv().getOrDefault("APP_TIMEZONE", "Asia/Almaty")));
 		SpringApplication.run(AttendanceAnaliserApplication.class, args);
 	}
 

@@ -47,7 +47,7 @@ logging:
 
 attendance:
   late-threshold-minutes: 15
-  timezone: ${APP_TIMEZONE:Europe/Almaty}
+  timezone: ${APP_TIMEZONE:Asia/Almaty}
 
 scheduler:
   active-attendance:
