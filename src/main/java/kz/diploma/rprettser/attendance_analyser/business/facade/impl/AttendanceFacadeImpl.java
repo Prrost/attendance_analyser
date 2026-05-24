@@ -37,6 +37,9 @@ public class AttendanceFacadeImpl implements AttendanceFacade {
     @Value("${attendance.late-threshold-minutes:15}")
     private int lateThresholdMinutes;
 
+    @Value("${attendance.end-window-minutes:15}")
+    private int endWindowMinutes;
+
     @Override
     @Transactional
     public void finalizeExpiredLessons() {
@@ -147,6 +150,14 @@ public class AttendanceFacadeImpl implements AttendanceFacade {
         if (earliest == null) {
             return AttendanceMark.ABSENT;
         }
+
+        LocalDateTime endWindow = lesson.getEndsAt().minusMinutes(endWindowMinutes);
+        boolean presentAtEnd = events.stream()
+                .anyMatch(e -> !e.getRecognizedAt().isBefore(endWindow));
+        if (!presentAtEnd) {
+            return AttendanceMark.ABSENT;
+        }
+
         LocalDateTime lateThreshold = lesson.getStartsAt().plusMinutes(lateThresholdMinutes);
         return earliest.isAfter(lateThreshold) ? AttendanceMark.LATE : AttendanceMark.PRESENT;
     }
