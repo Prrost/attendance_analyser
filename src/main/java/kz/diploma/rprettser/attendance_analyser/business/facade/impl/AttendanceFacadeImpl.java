@@ -65,7 +65,7 @@ public class AttendanceFacadeImpl implements AttendanceFacade {
                     attendance = attendanceService.createOrUpdate(student.getId(), lesson.getId(), AttendanceMark.ABSENT);
                 } else {
                     attendance = attendanceOpt.get();
-                    AttendanceMark mark = determineMark(attendance, lesson);
+                    AttendanceMark mark = determineMark(attendance, lesson, true);
                     attendance.setMark(mark);
                     attendance.setUpdatedAt(now);
                     attendanceRepository.save(attendance);
@@ -104,7 +104,7 @@ public class AttendanceFacadeImpl implements AttendanceFacade {
                 }
 
                 Attendance attendance = attendanceOpt.get();
-                AttendanceMark mark = determineMark(attendance, lesson);
+                AttendanceMark mark = determineMark(attendance, lesson, false);
                 attendance.setMark(mark);
                 attendance.setUpdatedAt(now);
                 attendanceRepository.save(attendance);
@@ -137,7 +137,7 @@ public class AttendanceFacadeImpl implements AttendanceFacade {
                 attendanceId, dto.getStudentName(), dto.getLessonName(), dto.getAttendanceMark());
     }
 
-    private AttendanceMark determineMark(Attendance attendance, Lesson lesson) {
+    private AttendanceMark determineMark(Attendance attendance, Lesson lesson, boolean requirePresenceAtEnd) {
         List<FaceRecognitionEvent> events = attendance.getFaceRecognitionEvents();
         if (events == null || events.isEmpty()) {
             return AttendanceMark.ABSENT;
@@ -151,11 +151,13 @@ public class AttendanceFacadeImpl implements AttendanceFacade {
             return AttendanceMark.ABSENT;
         }
 
-        LocalDateTime endWindow = lesson.getEndsAt().minusMinutes(endWindowMinutes);
-        boolean presentAtEnd = events.stream()
-                .anyMatch(e -> !e.getRecognizedAt().isBefore(endWindow));
-        if (!presentAtEnd) {
-            return AttendanceMark.ABSENT;
+        if (requirePresenceAtEnd) {
+            LocalDateTime endWindow = lesson.getEndsAt().minusMinutes(endWindowMinutes);
+            boolean presentAtEnd = events.stream()
+                    .anyMatch(e -> !e.getRecognizedAt().isBefore(endWindow));
+            if (!presentAtEnd) {
+                return AttendanceMark.ABSENT;
+            }
         }
 
         LocalDateTime lateThreshold = lesson.getStartsAt().plusMinutes(lateThresholdMinutes);
