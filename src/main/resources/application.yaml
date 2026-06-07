@@ -52,6 +52,8 @@ attendance:
 
 scheduler:
   active-attendance:
+    rate-ms: 10000
+  finalization:
     rate-ms: 60000
 
 server:

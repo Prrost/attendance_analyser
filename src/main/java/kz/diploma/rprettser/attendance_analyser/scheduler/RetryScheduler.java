@@ -13,7 +13,7 @@ public class RetryScheduler {
 
     private final FaceRecognitionFacade faceRecognitionFacade;
 
-    @Scheduled(fixedRateString = "${scheduler.retry.rate-ms:120000}")
+    @Scheduled(fixedRateString = "${scheduler.retry.rate-ms:60000}")
     public void retry() {
         log.debug("Retry scheduler started");
         try {

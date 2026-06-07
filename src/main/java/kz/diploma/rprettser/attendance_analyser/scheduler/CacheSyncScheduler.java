@@ -13,7 +13,7 @@ public class CacheSyncScheduler {
 
     private final CacheSyncFacade cacheSyncFacade;
 
-    @Scheduled(fixedRateString = "${scheduler.cache-sync.rate-ms:300000}")
+    @Scheduled(fixedRateString = "${scheduler.cache-sync.rate-ms:60000}")
     public void sync() {
         log.info("Scheduled cache sync started");
         try {
