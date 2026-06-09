@@ -23,7 +23,7 @@ public class AttendanceFinalizationScheduler {
         }
     }
 
-    @Scheduled(fixedRateString = "${scheduler.active-attendance.rate-ms:60000}")
+    @Scheduled(fixedRateString = "${scheduler.active-attendance.rate-ms:5000}")
     public void updateActiveAttendance() {
         log.debug("Active attendance update started");
         try {
